@@ -1,225 +1,201 @@
-"""Built-in content provider for Key4ce.
-
-Provides sample texts for offline use.
-"""
-
+"""Built-in practice content for key4ce."""
 from __future__ import annotations
-
 import random
-from typing import Any
-
-from key4ce.content.base import ContentProvider, TextContent
 
 
-# Built-in sample texts covering various difficulty levels
-BUILTIN_TEXTS = [
-    # Easy - Common words, short sentences
-    TextContent(
-        id="easy_common_1",
-        title="Common Words",
-        text="The quick brown fox jumps over the lazy dog. A simple sentence with all letters.",
-        source_type="builtin",
-        author="Sample",
-        difficulty="easy",
-        tags=["pangram", "short"],
-    ),
-    TextContent(
-        id="easy_common_2",
-        title="Daily Activities",
-        text="I wake up early in the morning. I eat breakfast and drink coffee. Then I go to work. The day is long but good.",
-        source_type="builtin",
-        author="Sample",
-        difficulty="easy",
-        tags=["simple", "daily"],
-    ),
-    TextContent(
-        id="easy_common_3",
-        title="Simple Story",
-        text="The cat sat on the mat. It was a warm day. The sun was bright. The cat was happy. It closed its eyes and slept.",
-        source_type="builtin",
-        author="Sample",
-        difficulty="easy",
-        tags=["story", "simple"],
-    ),
-    
-    # Medium - Varied vocabulary, longer sentences
-    TextContent(
-        id="medium_tech_1",
-        title="Technology Basics",
-        text="Computers have transformed the way we work and communicate. Modern systems process millions of operations per second, enabling complex applications that were once impossible. Programming languages allow developers to create software that solves real-world problems.",
-        source_type="builtin",
-        author="Sample",
-        difficulty="medium",
-        tags=["technology", "informative"],
-    ),
-    TextContent(
-        id="medium_nature_1",
-        title="The Forest",
-        text="Deep within the ancient forest, sunlight filters through the dense canopy above. Moss-covered trees stand like silent guardians, their roots intertwined beneath the soft earth. The air is fresh and carries the scent of pine needles and wild flowers.",
-        source_type="builtin",
-        author="Sample",
-        difficulty="medium",
-        tags=["nature", "descriptive"],
-    ),
-    TextContent(
-        id="medium_science_1",
-        title="The Universe",
-        text="The universe is vast beyond human comprehension. Billions of galaxies, each containing billions of stars, stretch across the cosmic void. Our own Milky Way is just one spiral galaxy among countless others, spinning through space at incredible speeds.",
-        source_type="builtin",
-        author="Sample",
-        difficulty="medium",
-        tags=["science", "space"],
-    ),
-    TextContent(
-        id="medium_history_1",
-        title="Ancient Civilizations",
-        text="Throughout history, great civilizations have risen and fallen. The Egyptians built pyramids that still stand today. The Romans constructed roads and aqueducts across their vast empire. Each culture left behind knowledge and artifacts that continue to fascinate us.",
-        source_type="builtin",
-        author="Sample",
-        difficulty="medium",
-        tags=["history", "culture"],
-    ),
-    
-    # Hard - Complex vocabulary, technical content
-    TextContent(
-        id="hard_code_1",
-        title="Python Functions",
-        text="def calculate_fibonacci(n: int) -> int: if n <= 1: return n else: return calculate_fibonacci(n-1) + calculate_fibonacci(n-2)",
-        source_type="builtin",
-        author="Sample",
-        difficulty="hard",
-        tags=["code", "python"],
-    ),
-    TextContent(
-        id="hard_code_2",
-        title="JavaScript Promise",
-        text="const fetchData = async (url) => { try { const response = await fetch(url); const data = await response.json(); return data; } catch (error) { console.error('Error:', error); throw error; } };",
-        source_type="builtin",
-        author="Sample",
-        difficulty="hard",
-        tags=["code", "javascript"],
-    ),
-    TextContent(
-        id="hard_philosophy_1",
-        title="Philosophical Inquiry",
-        text="The epistemological foundations of empiricism suggest that knowledge derives primarily from sensory experience. This contrasts with rationalist traditions that emphasize innate ideas and deductive reasoning. Contemporary philosophy continues to grapple with these fundamental questions about the nature of knowledge and reality.",
-        source_type="builtin",
-        author="Sample",
-        difficulty="hard",
-        tags=["philosophy", "academic"],
-    ),
-    TextContent(
-        id="hard_science_1",
-        title="Quantum Mechanics",
-        text="Quantum superposition allows particles to exist in multiple states simultaneously until observation collapses the wave function. This probabilistic nature of quantum mechanics challenged classical determinism and led to ongoing debates about the interpretation of quantum theory.",
-        source_type="builtin",
-        author="Sample",
-        difficulty="hard",
-        tags=["science", "physics"],
-    ),
-    
-    # Practice-focused texts
-    TextContent(
-        id="practice_home_row",
-        title="Home Row Practice",
-        text="asdf jkl; asdf jkl; fjdk slaf fjdk slaf asdfjkl; asdfjkl; fall lads fall lads ask dad ask dad",
-        source_type="builtin",
-        author="Practice",
-        difficulty="easy",
-        tags=["practice", "home-row"],
-    ),
-    TextContent(
-        id="practice_numbers",
-        title="Number Practice",
-        text="1234567890 0987654321 1a2b3c4d5e 2024 2025 2026 100 200 300 42 128 256 512 1024",
-        source_type="builtin",
-        author="Practice",
-        difficulty="medium",
-        tags=["practice", "numbers"],
-    ),
-    TextContent(
-        id="practice_symbols",
-        title="Symbol Practice",
-        text="!@#$%^&*() hello@email.com https://example.com file.txt config.yaml <div class='test'> [array, items] {key: value}",
-        source_type="builtin",
-        author="Practice",
-        difficulty="hard",
-        tags=["practice", "symbols"],
-    ),
+# ── Word lists ─────────────────────────────────────────────────────────────────
+
+COMMON_WORDS = [
+    "the", "be", "to", "of", "and", "a", "in", "that", "have", "it",
+    "for", "not", "on", "with", "he", "as", "you", "do", "at", "this",
+    "but", "his", "by", "from", "they", "we", "say", "her", "she", "or",
+    "an", "will", "my", "one", "all", "would", "there", "their", "what",
+    "so", "up", "out", "if", "about", "who", "get", "which", "go", "me",
+    "when", "make", "can", "like", "time", "no", "just", "him", "know",
+    "take", "people", "into", "year", "your", "good", "some", "could",
+    "them", "see", "other", "than", "then", "now", "look", "only", "come",
+    "its", "over", "think", "also", "back", "after", "use", "two", "how",
+    "our", "work", "first", "well", "way", "even", "new", "want", "because",
+    "any", "these", "give", "day", "most", "us", "great", "between", "need",
+    "large", "often", "hand", "high", "place", "hold", "turn", "help",
+    "start", "show", "hear", "play", "run", "move", "live", "believe",
+    "hold", "bring", "happen", "write", "provide", "sit", "stand", "lose",
+    "pay", "meet", "include", "continue", "set", "learn", "change", "lead",
+    "understand", "watch", "follow", "stop", "create", "speak", "read",
+    "spend", "grow", "open", "walk", "win", "offer", "remember", "love",
+    "consider", "appear", "buy", "wait", "serve", "die", "send", "expect",
+    "build", "stay", "fall", "cut", "reach", "kill", "remain", "suggest",
+]
+
+SENTENCES = [
+    "the quick brown fox jumps over the lazy dog",
+    "pack my box with five dozen liquor jugs",
+    "how vexingly quick daft zebras jump",
+    "the five boxing wizards jump quickly",
+    "sphinx of black quartz judge my vow",
+    "practice makes perfect and patience pays off",
+    "focus on accuracy first and speed will follow naturally",
+    "every expert was once a beginner who refused to give up",
+    "small consistent improvements lead to remarkable results over time",
+    "your fingers remember patterns better than your conscious mind does",
+    "the best time to start improving was yesterday the second best is now",
+    "slow down to speed up let accuracy guide your fingers first",
+    "typing is a skill built through repetition not through rushing",
+    "keep your wrists relaxed and let your fingers find their natural rhythm",
+    "consistency beats intensity when building any long term skill like typing",
+    "each keystroke is a small decision that shapes your overall fluency",
+    "the keyboard is an instrument and like any instrument practice rewires your brain",
+    "errors are not failures they are data points that guide your improvement",
+    "building muscle memory takes time but once built it becomes effortless",
+    "trust the process and enjoy the incremental progress you make each day",
+    "technology is best when it brings people together and helps them communicate clearly",
+    "a smooth workflow depends on the tools you use and how well you use them",
+    "clear communication starts with the ability to express your thoughts quickly",
+    "the mark of a skilled typist is consistency not just sheer speed",
+    "in the long run the habit of daily practice outweighs any single session",
+]
+
+QUOTES = [
+    "whether you think you can or you think you cannot you are right henry ford",
+    "the only way to do great work is to love what you do steve jobs",
+    "in the middle of difficulty lies opportunity albert einstein",
+    "it does not matter how slowly you go as long as you do not stop confucius",
+    "success is not final failure is not fatal it is the courage to continue that counts winston churchill",
+    "the future belongs to those who believe in the beauty of their dreams eleanor roosevelt",
+    "it always seems impossible until it is done nelson mandela",
+    "strive not to be a success but rather to be of value albert einstein",
+    "the best revenge is massive success frank sinatra",
+    "life is what happens to you while you are busy making other plans john lennon",
+    "you miss one hundred percent of the shots you never take wayne gretzky",
+    "whether you think you can or you think you cannot you are right henry ford",
+    "the only limit to our realization of tomorrow will be our doubts of today franklin d roosevelt",
+    "do not go where the path may lead go instead where there is no path and leave a trail emerson",
+    "two roads diverged in a wood and i took the one less traveled by and that has made all the difference robert frost",
+]
+
+CODE_SNIPPETS = [
+    "def greet(name): return f'hello {name}'",
+    "for i in range(10): print(i * i)",
+    "result = [x for x in data if x > 0]",
+    "with open('file.txt', 'r') as f: content = f.read()",
+    "def fibonacci(n): return n if n < 2 else fibonacci(n-1) + fibonacci(n-2)",
+    "class Node: def __init__(self, val): self.val = val; self.next = None",
+    "sorted_list = sorted(items, key=lambda x: x.name)",
+    "words = text.strip().lower().split()",
+    "count = sum(1 for char in text if char.isalpha())",
+    "pairs = {k: v for k, v in zip(keys, values)}",
+    "import os; path = os.path.join(base, 'data', 'records.json')",
+    "def clamp(val, lo, hi): return max(lo, min(hi, val))",
+    "avg = sum(values) / len(values) if values else 0",
+    "unique = list(dict.fromkeys(items))",
+    "matrix = [[0] * cols for _ in range(rows)]",
+    "def retry(fn, attempts=3): return next(fn() for _ in range(attempts))",
+    "headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}",
+    "chunks = [data[i:i+n] for i in range(0, len(data), n)]",
+]
+
+NUMBERS = [
+    "1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0",
+    "3 14159 26535 89793 23846 26433 83279 50288",
+    "2 71828 18284 59045 23536 02874 71352 66249",
+    "100 200 300 400 500 600 700 800 900 1000",
+    "1024 2048 4096 8192 16384 32768 65536 131072",
+    "192 168 1 1 255 255 255 0 10 0 0 1 172 16 0 1",
+    "42 17 99 3 58 71 24 86 13 67 45 92 36 81 29",
+    "2024 2025 2026 1999 2000 1984 1776 1066 1492",
 ]
 
 
-class BuiltinContent(ContentProvider):
-    """Provider for built-in sample texts."""
-    
-    def __init__(self) -> None:
-        self._texts = {t.id: t for t in BUILTIN_TEXTS}
-    
-    @property
-    def name(self) -> str:
-        return "Built-in Samples"
-    
-    @property
-    def source_type(self) -> str:
-        return "builtin"
-    
-    async def get_random(self) -> TextContent:
-        """Get a random built-in text."""
-        return random.choice(BUILTIN_TEXTS)
-    
-    async def get_random_by_difficulty(self, difficulty: str) -> TextContent:
-        """Get a random text of specified difficulty.
-        
-        Args:
-            difficulty: easy, medium, or hard
-            
-        Returns:
-            Random TextContent of that difficulty
-        """
-        filtered = [t for t in BUILTIN_TEXTS if t.difficulty == difficulty]
-        if not filtered:
-            return await self.get_random()
-        return random.choice(filtered)
-    
-    async def get_by_id(self, content_id: str) -> TextContent | None:
-        """Get a specific text by ID."""
-        return self._texts.get(content_id)
-    
-    async def list_available(self, limit: int = 20) -> list[TextContent]:
-        """List all available built-in texts."""
-        return BUILTIN_TEXTS[:limit]
-    
-    async def list_by_difficulty(self, difficulty: str) -> list[TextContent]:
-        """List texts by difficulty level.
-        
-        Args:
-            difficulty: easy, medium, or hard
-            
-        Returns:
-            List of texts with that difficulty
-        """
-        return [t for t in BUILTIN_TEXTS if t.difficulty == difficulty]
-    
-    async def list_by_tag(self, tag: str) -> list[TextContent]:
-        """List texts by tag.
-        
-        Args:
-            tag: Tag to filter by
-            
-        Returns:
-            List of texts with that tag
-        """
-        return [t for t in BUILTIN_TEXTS if tag in (t.tags or [])]
-    
-    async def search(self, query: str, limit: int = 10) -> list[TextContent]:
-        """Search built-in texts by title or content."""
-        query_lower = query.lower()
-        results = []
-        
-        for text in BUILTIN_TEXTS:
-            if query_lower in text.title.lower() or query_lower in text.text.lower():
-                results.append(text)
-                if len(results) >= limit:
-                    break
-        
-        return results
+# ── Category definitions ───────────────────────────────────────────────────────
+
+CATEGORIES: dict[str, dict] = {
+    "words": {
+        "label": "Common Words",
+        "description": "Top 200 words — great for finger placement",
+        "emoji": "📝",
+    },
+    "sentences": {
+        "label": "Sentences",
+        "description": "Natural prose with varied rhythm",
+        "emoji": "📖",
+    },
+    "quotes": {
+        "label": "Quotes",
+        "description": "Famous quotes — motivating and varied",
+        "emoji": "💬",
+    },
+    "code": {
+        "label": "Code",
+        "description": "Python snippets — symbols and syntax",
+        "emoji": "🖥",
+    },
+    "numbers": {
+        "label": "Numbers",
+        "description": "Numeric sequences — for data entry focus",
+        "emoji": "🔢",
+    },
+}
+
+
+# ── Public API ─────────────────────────────────────────────────────────────────
+
+def get_text(category: str, word_target: int = 40) -> str:
+    """Return a ready-to-type string for the given category.
+
+    Args:
+        category: One of the CATEGORIES keys.
+        word_target: Approximate number of words to aim for.
+
+    Returns:
+        A clean, single-line string to type.
+    """
+    if category == "words":
+        pool = COMMON_WORDS.copy()
+        random.shuffle(pool)
+        words: list[str] = []
+        while len(words) < word_target:
+            words.extend(pool)
+        return " ".join(words[:word_target])
+
+    elif category == "sentences":
+        pool = SENTENCES.copy()
+        random.shuffle(pool)
+        result = ""
+        for s in pool:
+            if len(result.split()) >= word_target:
+                break
+            result = (result + " " + s).strip()
+        return result
+
+    elif category == "quotes":
+        pool = QUOTES.copy()
+        random.shuffle(pool)
+        result = ""
+        for q in pool:
+            if len(result.split()) >= word_target:
+                break
+            result = (result + " " + q).strip()
+        return result
+
+    elif category == "code":
+        pool = CODE_SNIPPETS.copy()
+        random.shuffle(pool)
+        result = ""
+        for snippet in pool:
+            if len(result.split()) >= word_target:
+                break
+            result = (result + "  " + snippet).strip()
+        return result
+
+    elif category == "numbers":
+        pool = NUMBERS.copy()
+        random.shuffle(pool)
+        result = ""
+        for n in pool:
+            if len(result.split()) >= word_target:
+                break
+            result = (result + " " + n).strip()
+        return result
+
+    # Fallback
+    return get_text("sentences", word_target)
