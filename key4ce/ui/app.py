@@ -236,7 +236,8 @@ class App:
                 parts.append("keys: " + ", ".join(f"'{c}'" for c in focus_data.problem_chars[:2]))
             focus_hint = "  ·  ".join(parts)
 
-        self._stack.append(MenuScreen(self.theme, stats_line, focus_hint))
+        first_run = stats.total_sessions == 0
+        self._stack.append(MenuScreen(self.theme, stats_line, focus_hint, first_run=first_run))
 
     def _push_typing(self, text: str, source: str, zen: bool = False) -> None:
         from key4ce.ui.screens.typing import TypingScreen

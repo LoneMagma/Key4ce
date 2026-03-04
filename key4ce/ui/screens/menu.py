@@ -36,10 +36,11 @@ THEME_NAMES = list(ALL_THEMES.keys())
 class MenuScreen:
     """Main menu: category → length select → launch."""
 
-    def __init__(self, theme: Theme, stats_line: str = "", focus_hint: str = "") -> None:
+    def __init__(self, theme: Theme, stats_line: str = "", focus_hint: str = "", first_run: bool = False) -> None:
         self.theme = theme
         self.stats_line = stats_line
         self.focus_hint = focus_hint  # e.g. "weak: 'th', 'ng'" from DB analysis
+        self.first_run = first_run
         self._cat_index = 0
         self._len_index = 1   # default 50 words
         self._stage = 0       # 0=category, 1=length, 2=theme-picker
@@ -62,6 +63,10 @@ class MenuScreen:
 
         if self._stage == 0:
             parts.append(self._render_categories())
+
+        if self.first_run and self._stage == 0:
+            parts.append(Align.center(Text("first run: choose a mode, press enter, type naturally.", style=t.text_muted)))
+            parts.append(Text(""))
         elif self._stage == 1:
             parts.append(self._render_length())
         elif self._stage == 2:

@@ -1,14 +1,108 @@
 """Entry point for key4ce — full argparse CLI."""
 from __future__ import annotations
 
-import sys
+import json
+from pathlib import Path
+
+
+def _summarize_recent_sessions(recent_sessions: list, days: int = 7) -> dict:
+    """Build a compact summary for sessions in the last `days` days."""
+    from datetime import datetime, timedelta
+
+    cutoff = datetime.now() - timedelta(days=days)
+    in_window = []
+    for s in recent_sessions:
+        try:
+            ts = datetime.fromisoformat(s.ts)
+        except Exception:
+            continue
+        if ts >= cutoff:
+            in_window.append(s)
+
+    if not in_window:
+        return {
+            "days": days,
+            "sessions": 0,
+            "avg_wpm": 0.0,
+            "avg_accuracy": 0.0,
+            "best_wpm": 0.0,
+            "total_minutes": 0.0,
+        }
+
+    sessions = len(in_window)
+    avg_wpm = sum(s.wpm for s in in_window) / sessions
+    avg_accuracy = sum(s.accuracy for s in in_window) / sessions
+    best_wpm = max(s.wpm for s in in_window)
+    total_minutes = sum(s.duration for s in in_window) / 60
+
+    return {
+        "days": days,
+        "sessions": sessions,
+        "avg_wpm": round(avg_wpm, 1),
+        "avg_accuracy": round(avg_accuracy, 1),
+        "best_wpm": round(best_wpm, 1),
+        "total_minutes": round(total_minutes, 1),
+    }
+
+
+
+
+def _sessions_to_jsonable(records: list) -> list[dict]:
+    """Convert session records to serialisable dicts."""
+    return [
+        {
+            "id": s.id,
+            "ts": s.ts,
+            "source": s.source,
+            "wpm": s.wpm,
+            "accuracy": s.accuracy,
+            "duration": s.duration,
+            "chars_typed": s.chars_typed,
+            "errors": s.errors,
+            "timings": s.timings,
+        }
+        for s in records
+    ]
+
+
+def _print_export_json(limit: int | None = None) -> None:
+    """Export session history as JSON for backup/portability."""
+    from key4ce.data.db import Database
+
+    db = Database()
+    db.connect()
+    sessions = db.list_sessions(limit=limit)
+    db.close()
+
+    output = {
+        "exported_at": __import__("datetime").datetime.now().isoformat(),
+        "count": len(sessions),
+        "sessions": _sessions_to_jsonable(sessions),
+    }
+    print(json.dumps(output, indent=2))
+
+
+
+def _import_sessions_from_file(path: str) -> int:
+    """Import sessions from an export JSON file and return inserted count."""
+    from key4ce.data.db import Database
+
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    sessions = data.get("sessions", []) if isinstance(data, dict) else []
+    if not isinstance(sessions, list):
+        sessions = []
+
+    db = Database()
+    db.connect()
+    inserted = db.import_sessions(sessions)
+    db.close()
+    return inserted
 
 
 def _print_stats() -> None:
     """Print a stats summary table directly to stdout (no TUI)."""
     from rich.console import Console
     from rich.table import Table
-    from rich.text import Text
     from key4ce.data.db import Database
     from key4ce.themes.themes import DEFAULT_THEME
 
@@ -24,7 +118,6 @@ def _print_stats() -> None:
         console.print("[dim]No sessions recorded yet. Run key4ce and start typing![/dim]")
         return
 
-    # Summary header
     console.print()
     console.print(f"  [bold {t.primary}]key4ce[/bold {t.primary}]  stats", style="")
     console.print()
@@ -37,7 +130,6 @@ def _print_stats() -> None:
     if not stats.recent_sessions:
         return
 
-    # Recent sessions table
     table = Table(
         "Date", "Source", "WPM", "Accuracy", "Duration",
         border_style=t.dim,
@@ -61,8 +153,8 @@ def _print_stats() -> None:
 
 
 def _print_stats_json() -> None:
-    import json
     from key4ce.data.db import Database
+
     db = Database()
     db.connect()
     stats = db.get_stats()
@@ -72,19 +164,44 @@ def _print_stats_json() -> None:
         "best_wpm": stats.best_wpm,
         "avg_wpm": stats.avg_wpm,
         "avg_accuracy": stats.avg_accuracy,
-        "recent": [
-            {
-                "id": s.id,
-                "ts": s.ts,
-                "source": s.source,
-                "wpm": s.wpm,
-                "accuracy": s.accuracy,
-                "duration": s.duration,
-            }
-            for s in stats.recent_sessions
-        ],
+        "recent": _sessions_to_jsonable(stats.recent_sessions),
     }
     print(json.dumps(output, indent=2))
+
+
+def _print_weekly_summary(days: int = 7, as_json: bool = False) -> None:
+    """Print progress summary over the recent window."""
+    from rich.console import Console
+    from key4ce.data.db import Database
+    from key4ce.themes.themes import DEFAULT_THEME
+
+    t = DEFAULT_THEME
+    db = Database()
+    db.connect()
+    stats = db.get_stats()
+    db.close()
+
+    summary = _summarize_recent_sessions(stats.recent_sessions, days=days)
+
+    if as_json:
+        print(json.dumps(summary, indent=2))
+        return
+
+    console = Console()
+    console.print()
+    console.print(f"  [bold {t.primary}]key4ce[/bold {t.primary}]  {days}-day summary")
+    console.print()
+    if summary["sessions"] == 0:
+        console.print("  [dim]No sessions in this period yet.[/dim]")
+        console.print()
+        return
+
+    console.print(f"  [bold]Sessions[/bold]       {summary['sessions']}")
+    console.print(f"  [bold]Average WPM[/bold]    {summary['avg_wpm']:.1f}")
+    console.print(f"  [bold]Avg Accuracy[/bold]   {summary['avg_accuracy']:.1f}%")
+    console.print(f"  [bold]Best WPM[/bold]       {summary['best_wpm']:.1f}")
+    console.print(f"  [bold]Practice Time[/bold]  {summary['total_minutes']:.1f} min")
+    console.print()
 
 
 def main() -> None:
@@ -95,14 +212,21 @@ def main() -> None:
         description="A terminal typing trainer that actually makes you better.",
     )
 
-    # -- Subcommands
     sub = parser.add_subparsers(dest="command")
 
-    # stats subcommand
     stats_cmd = sub.add_parser("stats", help="Print session stats and exit (no TUI)")
     stats_cmd.add_argument("--json", action="store_true", help="Output as JSON")
 
-    # -- Global flags (for main TUI launch)
+    weekly_cmd = sub.add_parser("weekly", help="Print recent progress summary and exit")
+    weekly_cmd.add_argument("--days", type=int, default=7, metavar="N", help="Window size in days (default: 7)")
+    weekly_cmd.add_argument("--json", action="store_true", help="Output as JSON")
+
+    export_cmd = sub.add_parser("export", help="Export session history as JSON")
+    export_cmd.add_argument("--limit", type=int, default=None, metavar="N", help="Optional max number of sessions to export")
+
+    import_cmd = sub.add_parser("import", help="Import session history from exported JSON")
+    import_cmd.add_argument("path", help="Path to exported JSON file")
+
     parser.add_argument(
         "--theme",
         metavar="NAME",
@@ -135,7 +259,6 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    # ── stats subcommand (no TUI) ──────────────────────────────────────────────
     if args.command == "stats":
         if args.json:
             _print_stats_json()
@@ -143,7 +266,21 @@ def main() -> None:
             _print_stats()
         return
 
-    # ── TUI launch ────────────────────────────────────────────────────────────
+    if args.command == "weekly":
+        days = max(1, int(args.days))
+        _print_weekly_summary(days=days, as_json=args.json)
+        return
+
+    if args.command == "export":
+        limit = None if args.limit is None else max(1, int(args.limit))
+        _print_export_json(limit=limit)
+        return
+
+    if args.command == "import":
+        inserted = _import_sessions_from_file(args.path)
+        print(f"Imported {inserted} session(s).")
+        return
+
     from key4ce.themes.themes import get_theme, DEFAULT_THEME
     from key4ce.ui.app import App
 
