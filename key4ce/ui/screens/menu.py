@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Optional
 
 import readchar
 from rich.align import Align
+from rich.columns import Columns
 from rich.console import Group
 from rich.panel import Panel
 from rich.rule import Rule
@@ -36,13 +37,15 @@ THEME_NAMES = list(ALL_THEMES.keys())
 class MenuScreen:
     """Main menu: category → length select → launch."""
 
-    def __init__(self, theme: Theme, stats_line: str = "", focus_hint: str = "") -> None:
+    def __init__(self, theme: Theme, stats_line: str = "", focus_hint: str = "", first_run: bool = False) -> None:
         self.theme = theme
         self.stats_line = stats_line
         self.focus_hint = focus_hint  # e.g. "weak: 'th', 'ng'" from DB analysis
+        self.first_run = first_run
         self._cat_index = 0
         self._len_index = 1   # default 50 words
         self._stage = 0       # 0=category, 1=length, 2=theme-picker
+        self._current_theme_cursor = 0
 
     # ── Rendering ─────────────────────────────────────────────────────────────
 
@@ -61,9 +64,13 @@ class MenuScreen:
             parts.append(Text(""))
 
         if self._stage == 0:
-            parts.append(self._render_categories())
+            parts.append(self._render_stage_zero())
+
+        if self.first_run and self._stage == 0:
+            parts.append(Align.center(Text("first run: choose a mode, press enter, type naturally.", style=t.text_muted)))
+            parts.append(Text(""))
         elif self._stage == 1:
-            parts.append(self._render_length())
+            parts.append(self._render_stage_one())
         elif self._stage == 2:
             parts.append(self._render_themes())
 
@@ -72,6 +79,17 @@ class MenuScreen:
 
         return Panel(Group(*parts), border_style=t.dim, padding=(1, 4))
 
+    def _render_stage_zero(self) -> object:
+        t = self.theme
+        return Columns(
+            [
+                Panel(self._render_categories(), border_style=t.dim, padding=(1, 1), title="Modes"),
+                Panel(self._render_mode_brief(), border_style=t.dim, padding=(1, 1), title="Selected Mode"),
+            ],
+            equal=True,
+            expand=True,
+        )
+
     def _render_categories(self) -> object:
         t = self.theme
         lines: list[Text] = []
@@ -79,7 +97,7 @@ class MenuScreen:
         lines.append(Text("  Builtin\n", style=t.secondary))
         for i, key in enumerate(BUILTIN_KEYS):
             cat = CATEGORIES[key]
-            lines.append(self._cat_line(i, cat["emoji"], cat["label"], cat["description"]))
+            lines.append(self._cat_line(i, cat["label"], cat["description"]))
 
         lines.append(Text(""))
         lines.append(Text("  Live\n", style=t.secondary))
@@ -87,13 +105,13 @@ class MenuScreen:
         for i, key in enumerate(EXTERNAL_KEYS):
             cat = EXTERNAL_CATEGORIES[key]
             real_i = len(BUILTIN_KEYS) + i
-            lines.append(self._cat_line(real_i, cat["emoji"], cat["label"], cat["description"]))
+            lines.append(self._cat_line(real_i, cat["label"], cat["description"]))
 
         # Focus mode entry
         lines.append(Text(""))
         focus_i = len(BUILTIN_KEYS) + len(EXTERNAL_KEYS)
         desc = self.focus_hint if self.focus_hint else "targets your weak spots from recent sessions"
-        lines.append(self._cat_line(focus_i, "🎯", "Focus Practice", desc))
+        lines.append(self._cat_line(focus_i, "Focus Practice", desc))
 
         lines.append(Text(""))
         theme_hint = Text()
@@ -103,34 +121,69 @@ class MenuScreen:
 
         return Align.center(Group(*lines))
 
-    def _cat_line(self, idx: int, emoji: str, label: str, desc: str) -> Text:
+    def _cat_line(self, idx: int, label: str, desc: str) -> Text:
         t = self.theme
         selected = idx == self._cat_index
         line = Text()
         if selected:
-            line.append(f"  ❯ {emoji}  ", style=f"bold {t.primary}")
+            line.append("  > ", style=f"bold {t.primary}")
             line.append(label, style=f"bold {t.primary}")
             line.append(f"  — {desc}", style=t.secondary)
         else:
-            line.append(f"    {emoji}  ", style=t.dim)
+            line.append("    ", style=t.dim)
             line.append(label, style=t.text_muted)
         return line
 
-    def _render_length(self) -> object:
+    def _render_mode_brief(self) -> object:
         t = self.theme
-        key = ALL_CONTENT_KEYS[self._cat_index]
-        if key in CATEGORIES:
-            cat_name = CATEGORIES[key]["label"]
-            cat_emoji = CATEGORIES[key]["emoji"]
-        elif key in EXTERNAL_CATEGORIES:
-            cat_name = EXTERNAL_CATEGORIES[key]["label"]
-            cat_emoji = EXTERNAL_CATEGORIES[key]["emoji"]
-        else:
-            cat_name = "Focus Practice"
-            cat_emoji = "🎯"
+        label = self._selected_category_label()
+        desc = self._selected_category_description()
 
         lines: list[Text] = []
-        header = Text(f"  {cat_emoji}  {cat_name}  —  session length:\n", style=t.primary)
+        lines.append(Text(f"  Mode: {label}", style=f"bold {t.primary}"))
+        lines.append(Text(f"  Details: {desc}", style=t.text_muted))
+        lines.append(Text(""))
+        lines.append(Text(f"  Planned session length: {WORD_TARGETS[self._len_index]} words", style=t.secondary))
+        lines.append(Text(""))
+        lines.append(Text("  Commands", style=f"bold {t.secondary}"))
+        lines.append(Text("  Enter  start flow", style=t.text_muted))
+        lines.append(Text("  t      switch theme", style=t.text_muted))
+        lines.append(Text("  q      quit", style=t.text_muted))
+        return Group(*lines)
+
+    def _selected_category_label(self) -> str:
+        key = ALL_CONTENT_KEYS[self._cat_index]
+        if key in CATEGORIES:
+            return str(CATEGORIES[key]["label"])
+        if key in EXTERNAL_CATEGORIES:
+            return str(EXTERNAL_CATEGORIES[key]["label"])
+        return "Focus Practice"
+
+    def _selected_category_description(self) -> str:
+        key = ALL_CONTENT_KEYS[self._cat_index]
+        if key in CATEGORIES:
+            return str(CATEGORIES[key]["description"])
+        if key in EXTERNAL_CATEGORIES:
+            return str(EXTERNAL_CATEGORIES[key]["description"])
+        return self.focus_hint if self.focus_hint else "targets your weak spots from recent sessions"
+
+    def _render_stage_one(self) -> object:
+        t = self.theme
+        return Columns(
+            [
+                Panel(self._render_length(), border_style=t.dim, padding=(1, 1), title="Session Length"),
+                Panel(self._render_preflight(), border_style=t.dim, padding=(1, 1), title="Preflight"),
+            ],
+            equal=True,
+            expand=True,
+        )
+
+    def _render_length(self) -> object:
+        t = self.theme
+        cat_name = self._selected_category_label()
+
+        lines: list[Text] = []
+        header = Text(f"  {cat_name}  —  session length:\n", style=t.primary)
         lines.append(header)
 
         for i, n in enumerate(WORD_TARGETS):
@@ -145,7 +198,20 @@ class MenuScreen:
 
         lines.append(Text(""))
         lines.append(Text("  ← Backspace to go back", style=t.dim))
-        return Align.center(Group(*lines))
+        return Group(*lines)
+
+    def _render_preflight(self) -> object:
+        t = self.theme
+        lines: list[Text] = []
+        lines.append(Text(f"  Source: {self._selected_category_label()}", style=f"bold {t.primary}"))
+        lines.append(Text(f"  Description: {self._selected_category_description()}", style=t.text_muted))
+        lines.append(Text(f"  Target length: {WORD_TARGETS[self._len_index]} words", style=t.secondary))
+        lines.append(Text(""))
+        lines.append(Text("  Flow", style=f"bold {t.secondary}"))
+        lines.append(Text("  Enter      start session", style=t.text_muted))
+        lines.append(Text("  Backspace  return to mode selection", style=t.text_muted))
+        lines.append(Text("  Esc        return from typing screen", style=t.text_muted))
+        return Group(*lines)
 
     def _render_themes(self) -> object:
         t = self.theme

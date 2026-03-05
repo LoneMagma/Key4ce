@@ -70,7 +70,7 @@ class TypingScreen:
         """Return how many chars the ghost has typed at current elapsed time."""
         if not self._ghost:
             return -1
-        if self.engine.state == SessionState.IDLE:
+        if self.engine.session_state == SessionState.IDLE:
             return 0
         elapsed_ms = self.engine.elapsed * 1000
         pos = 0

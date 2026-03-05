@@ -199,3 +199,84 @@ def get_text(category: str, word_target: int = 40) -> str:
 
     # Fallback
     return get_text("sentences", word_target)
+
+from key4ce.content.base import TextContent, ContentProvider
+
+
+BUILTIN_TEXTS: list[TextContent] = [
+    TextContent(
+        id="easy_common_1",
+        title="Easy Common 1",
+        text="the quick brown fox jumps over the lazy dog",
+        source_type="builtin",
+        difficulty="easy",
+        tags=["common", "pangram"],
+    ),
+    TextContent(
+        id="easy_common_2",
+        title="Easy Common 2",
+        text="practice makes perfect and patience pays off",
+        source_type="builtin",
+        difficulty="easy",
+        tags=["common"],
+    ),
+    TextContent(
+        id="medium_sentence_1",
+        title="Medium Sentence 1",
+        text="small consistent improvements lead to remarkable results over time",
+        source_type="builtin",
+        difficulty="medium",
+        tags=["sentence"],
+    ),
+    TextContent(
+        id="hard_code_1",
+        title="Hard Code 1",
+        text="def fibonacci(n): return n if n < 2 else fibonacci(n-1) + fibonacci(n-2)",
+        source_type="builtin",
+        difficulty="hard",
+        tags=["code"],
+    ),
+]
+
+
+class BuiltinContent(ContentProvider):
+    @property
+    def name(self) -> str:
+        return "Built-in Samples"
+
+    @property
+    def source_type(self) -> str:
+        return "builtin"
+
+    async def get_random(self) -> TextContent:
+        return random.choice(BUILTIN_TEXTS)
+
+    async def get_by_id(self, content_id: str) -> TextContent | None:
+        for item in BUILTIN_TEXTS:
+            if item.id == content_id:
+                return item
+        return None
+
+    async def list_available(self, limit: int = 20) -> list[TextContent]:
+        return BUILTIN_TEXTS[:limit]
+
+    async def list_by_difficulty(self, difficulty: str, limit: int = 20) -> list[TextContent]:
+        items = [i for i in BUILTIN_TEXTS if i.difficulty == difficulty]
+        return items[:limit]
+
+    async def get_random_by_difficulty(self, difficulty: str) -> TextContent:
+        items = await self.list_by_difficulty(difficulty)
+        if not items:
+            return await self.get_random()
+        return random.choice(items)
+
+    async def search(self, query: str, limit: int = 10) -> list[TextContent]:
+        q = query.lower().strip()
+        if not q:
+            return []
+        matched = [
+            item
+            for item in BUILTIN_TEXTS
+            if q in item.title.lower() or q in item.text.lower() or any(q in t for t in item.tags or [])
+        ]
+        return matched[:limit]
