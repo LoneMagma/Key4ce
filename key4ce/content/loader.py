@@ -134,6 +134,15 @@ def fetch_quote(use_cache: bool = True) -> str | None:
     return text
 
 
+def external_provider_status() -> dict[str, bool]:
+    """Return quick availability flags for external providers."""
+    wiki_ok = _fetch_json("https://en.wikipedia.org/api/rest_v1/page/random/summary") is not None
+    quote_ok = _fetch_json("https://api.quotable.io/quotes/random") is not None
+    return {
+        "wikipedia": wiki_ok,
+        "quote": quote_ok,
+    }
+
 # ── Dispatcher ────────────────────────────────────────────────────────────────
 
 def get_external_text(source: str, bust_cache: bool = False) -> str | None:

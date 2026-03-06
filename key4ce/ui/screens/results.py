@@ -67,9 +67,21 @@ class ResultsScreen:
 
         mins, secs = divmod(int(a.duration_sec), 60)
         meta = Text()
-        meta.append(f"  {mins}:{secs:02d}   ·   {a.chars_typed} chars   ·   {a.total_errors} errors", style=t.text_muted)
+        meta.append(f"  source: {self.source}   ·   {mins}:{secs:02d}   ·   {a.chars_typed} chars   ·   {a.total_errors} errors", style=t.text_muted)
         parts.append(meta)
         parts.append(Text(""))
+
+        # Next step (phase 1 coaching, minimal)
+        parts.append(self._section("NEXT STEP", t))
+        parts.append(Text(f"  {self._next_step_text()}", style=t.secondary))
+        parts.append(Text(""))
+
+        # Pace insight (phase 2 replay/insights - lightweight)
+        insight = self._pace_insight_text()
+        if insight:
+            parts.append(self._section("PACE INSIGHT", t))
+            parts.append(Text(f"  {insight}", style=t.text_muted))
+            parts.append(Text(""))
 
         # WPM graph
         if a.wpm_buckets:
@@ -150,6 +162,39 @@ class ResultsScreen:
         parts.append(Align.center(actions))
 
         return Panel(Group(*parts), border_style=t.primary, padding=(1, 2))
+
+
+    def _next_step_text(self) -> str:
+        a = self.analysis
+        if a.accuracy < 90:
+            return "Slow down 5-10% and aim for 95%+ accuracy next run."
+        if a.wpm < 40:
+            return "Keep runs short (25 words) and focus on smooth rhythm."
+        if a.total_errors > max(3, a.chars_typed // 20):
+            return "Run focus mode once, then retry this source."
+        return "Great run. Increase to 50-100 words to build consistency."
+
+    def _pace_insight_text(self) -> str:
+        buckets = self.analysis.wpm_buckets
+        if len(buckets) < 2:
+            return ""
+
+        peak = max(buckets)
+        trough = min(buckets)
+        peak_i = buckets.index(peak) + 1
+        trough_i = buckets.index(trough) + 1
+        delta = buckets[-1] - buckets[0]
+
+        trend = "steady"
+        if delta >= 8:
+            trend = "finished stronger"
+        elif delta <= -8:
+            trend = "slowed in later buckets"
+
+        return (
+            f"Peak {peak:.1f} WPM (bucket {peak_i}), lowest {trough:.1f} WPM "
+            f"(bucket {trough_i}); {trend}."
+        )
 
     # ── Input ─────────────────────────────────────────────────────────────────
 

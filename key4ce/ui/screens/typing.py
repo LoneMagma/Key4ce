@@ -28,7 +28,7 @@ class TypingScreen:
     Phase 2 additions:
     - zen_mode: hides stats bar; stats shown only at end
     - ghost_timings: cumulative ms list from best previous session
-    - 'h' key toggles live keyboard heatmap
+    - tab key toggles live keyboard heatmap
     """
 
     def __init__(
@@ -70,7 +70,7 @@ class TypingScreen:
         """Return how many chars the ghost has typed at current elapsed time."""
         if not self._ghost:
             return -1
-        if self.engine.state == SessionState.IDLE:
+        if self.engine.session_state == SessionState.IDLE:
             return 0
         elapsed_ms = self.engine.elapsed * 1000
         pos = 0
@@ -112,8 +112,18 @@ class TypingScreen:
         parts.append(header)
         parts.append(Text(""))
 
-        # Typing text
-        parts.append(self._render_text_block())
+        # Typing text (center panel)
+        parts.append(
+            Align.center(
+                Panel(
+                    self._render_text_block(),
+                    title="Typing",
+                    border_style=t.primary,
+                    padding=(1, 2),
+                    width=min(_LINE_WIDTH + 10, 84),
+                )
+            )
+        )
         parts.append(Text(""))
 
         # Stats bar (hidden in zen mode while typing)
@@ -139,14 +149,14 @@ class TypingScreen:
         hint = Text()
         hint.append("  Esc ", style=t.primary)
         hint.append("abandon   ", style=t.text_muted)
-        hint.append("h ", style=t.primary)
+        hint.append("tab ", style=t.primary)
         hint.append("heatmap", style=t.text_muted)
         if eng.has_error:
             hint.append("   ✗ wrong key", style=f"bold {t.error}")
         parts.append(hint)
 
         border = t.error if eng.has_error else (t.secondary if self._zen else t.dim)
-        return Panel(Group(*parts), border_style=border, padding=(1, 2))
+        return Panel(Group(*parts), border_style=border, padding=(1, 2), expand=True)
 
     def _render_text_block(self) -> Text:
         eng = self.engine
@@ -182,7 +192,7 @@ class TypingScreen:
         if key == readchar.key.ESC:
             return ScreenAction.pop()
 
-        if key in ("h", "H"):
+        if key == readchar.key.TAB:
             self._show_heatmap = not self._show_heatmap
             return None
 
@@ -229,7 +239,9 @@ def _line_start_pos(lines: list[str], line_idx: int) -> int:
 def _append_char(text: Text, ch: str, state: str, theme: Theme) -> None:
     t = theme
     if state == "typed":
-        text.append(ch, style=t.dim)
+        text.append(ch, style="bold green")
+    elif state == "typed_error":
+        text.append(ch, style=f"bold {t.error}")
     elif state == "cursor":
         display = "█" if ch == " " else ch
         text.append(display, style=f"bold black on {t.primary}")
