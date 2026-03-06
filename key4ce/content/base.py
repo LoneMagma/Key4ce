@@ -105,3 +105,40 @@ class ContentProvider(ABC):
             True if the provider can be used
         """
         return True
+
+
+
+class ProviderRegistry:
+    """Minimal registry for pluggable content providers."""
+
+    def __init__(self) -> None:
+        self._providers: dict[str, ContentProvider] = {}
+
+    def register(self, provider: ContentProvider) -> None:
+        self._providers[provider.source_type] = provider
+
+    def get(self, source_type: str) -> ContentProvider | None:
+        return self._providers.get(source_type)
+
+    def list_source_types(self) -> list[str]:
+        return sorted(self._providers.keys())
+
+    def list_providers(self) -> list[ContentProvider]:
+        return [self._providers[k] for k in self.list_source_types()]
+
+    def availability_snapshot(self) -> list[dict[str, object]]:
+        rows: list[dict[str, object]] = []
+        for provider in self.list_providers():
+            available = False
+            try:
+                available = bool(provider.is_available())
+            except Exception:
+                available = False
+            rows.append(
+                {
+                    "source_type": provider.source_type,
+                    "name": provider.name,
+                    "available": available,
+                }
+            )
+        return rows
