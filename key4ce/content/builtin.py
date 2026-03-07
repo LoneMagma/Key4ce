@@ -1,282 +1,273 @@
-"""Built-in practice content for key4ce."""
+"""
+key4ce/content/builtin.py
+──────────────────────────
+Built-in text pools for all content modes.
+
+Copy guidelines applied throughout:
+  - Clear, precise prose. No filler. No padding.
+  - Varied sentence length — short punchy lines mixed with longer ones.
+  - Realistic character distribution: commas, periods, capitals, numbers in context.
+  - Code samples: real, readable Python and shell — not toy snippets.
+  - Terminal-operator tone: professional, technical, direct.
+  - No clichés. No "lorem ipsum". No juvenile content.
+"""
+
 from __future__ import annotations
+
 import random
 
+# ═════════════════════════════════════════════════════════════════
+#  Words — high-frequency, useful English vocabulary
+# ═════════════════════════════════════════════════════════════════
 
-# ── Word lists ─────────────────────────────────────────────────────────────────
+WORDS = """
+ability access account action activity address adjust advance affect agent
+agree ahead alert allow always amount analyse apply approach area argument
+aspect assert assign attach audit avoid balance base batch begin benefit
+build cache call capture change check class clear client close collect
+command commit complete component compute config connect consider contain
+context control convert copy count create cycle data debug define delay
+deploy detail detect develop direct disable display distribute divide
+document drop enable encrypt engine ensure entry error event example
+execute expand extend factor fail fetch field filter finish flow focus
+force format forward function generate group handle hash header include
+increase index init input install invoke iterate keep launch layer learn
+level limit list load local log manage match measure merge method modify
+monitor move name network notice offset option output parse path pause
+perform permit place plan policy poll process profile publish purge queue
+read reason record reduce register release remove render request reset
+resolve response retry return route rule run scale scan schedule search
+secure send sequence service set signal sort source split start state
+store stream string submit sync system target task template test timeout
+trace transform trigger type update use value verify version wait write
+""".split()
 
-COMMON_WORDS = [
-    "the", "be", "to", "of", "and", "a", "in", "that", "have", "it",
-    "for", "not", "on", "with", "he", "as", "you", "do", "at", "this",
-    "but", "his", "by", "from", "they", "we", "say", "her", "she", "or",
-    "an", "will", "my", "one", "all", "would", "there", "their", "what",
-    "so", "up", "out", "if", "about", "who", "get", "which", "go", "me",
-    "when", "make", "can", "like", "time", "no", "just", "him", "know",
-    "take", "people", "into", "year", "your", "good", "some", "could",
-    "them", "see", "other", "than", "then", "now", "look", "only", "come",
-    "its", "over", "think", "also", "back", "after", "use", "two", "how",
-    "our", "work", "first", "well", "way", "even", "new", "want", "because",
-    "any", "these", "give", "day", "most", "us", "great", "between", "need",
-    "large", "often", "hand", "high", "place", "hold", "turn", "help",
-    "start", "show", "hear", "play", "run", "move", "live", "believe",
-    "hold", "bring", "happen", "write", "provide", "sit", "stand", "lose",
-    "pay", "meet", "include", "continue", "set", "learn", "change", "lead",
-    "understand", "watch", "follow", "stop", "create", "speak", "read",
-    "spend", "grow", "open", "walk", "win", "offer", "remember", "love",
-    "consider", "appear", "buy", "wait", "serve", "die", "send", "expect",
-    "build", "stay", "fall", "cut", "reach", "kill", "remain", "suggest",
-]
+# ═════════════════════════════════════════════════════════════════
+#  Sentences — professional, technical-ish prose
+# ═════════════════════════════════════════════════════════════════
 
 SENTENCES = [
-    "the quick brown fox jumps over the lazy dog",
-    "pack my box with five dozen liquor jugs",
-    "how vexingly quick daft zebras jump",
-    "the five boxing wizards jump quickly",
-    "sphinx of black quartz judge my vow",
-    "practice makes perfect and patience pays off",
-    "focus on accuracy first and speed will follow naturally",
-    "every expert was once a beginner who refused to give up",
-    "small consistent improvements lead to remarkable results over time",
-    "your fingers remember patterns better than your conscious mind does",
-    "the best time to start improving was yesterday the second best is now",
-    "slow down to speed up let accuracy guide your fingers first",
-    "typing is a skill built through repetition not through rushing",
-    "keep your wrists relaxed and let your fingers find their natural rhythm",
-    "consistency beats intensity when building any long term skill like typing",
-    "each keystroke is a small decision that shapes your overall fluency",
-    "the keyboard is an instrument and like any instrument practice rewires your brain",
-    "errors are not failures they are data points that guide your improvement",
-    "building muscle memory takes time but once built it becomes effortless",
-    "trust the process and enjoy the incremental progress you make each day",
-    "technology is best when it brings people together and helps them communicate clearly",
-    "a smooth workflow depends on the tools you use and how well you use them",
-    "clear communication starts with the ability to express your thoughts quickly",
-    "the mark of a skilled typist is consistency not just sheer speed",
-    "in the long run the habit of daily practice outweighs any single session",
+    "A consistent naming convention reduces cognitive load and makes codebases navigable without prior context.",
+    "Terminal tools reward precision. Every flag, pipe, and redirect reflects an intentional decision about data flow.",
+    "The most effective debugging strategy is often the simplest: read the error message carefully before assuming the cause.",
+    "Documentation written for a future colleague is nearly always better than documentation written for the author.",
+    "Latency compounds. A 50-millisecond delay in five sequential requests produces a 250-millisecond visible lag.",
+    "Defaults matter. Most users never change settings, which means the default configuration is the real product.",
+    "A well-structured commit message describes why a change was made, not just what was changed.",
+    "Clean interfaces emerge from constraints. Reducing the number of decisions a system exposes usually improves it.",
+    "Rate limiting is not a punitive measure. It is a design choice that keeps shared infrastructure stable.",
+    "Every abstraction hides something. The question is whether what it hides is worth hiding.",
+    "Configuration files are code. They deserve the same scrutiny, version control, and review process.",
+    "Naming a variable is not a trivial decision. The name you give it is the first documentation of its purpose.",
+    "Distributed systems fail in ways that local systems never do. Plan for partial failure as the normal case.",
+    "The time you invest in writing a clear specification usually pays back before the first line of code is reviewed.",
+    "Idempotency is not always easy to achieve, but it makes systems dramatically safer to operate and recover.",
+    "Logging should be informative without being verbose. A log that contains everything is as useless as one with nothing.",
+    "Rollback plans are as important as deployment plans. The ability to reverse a change reduces the cost of making it.",
+    "Typing speed correlates with the ability to keep pace with thought. The skill compounds across every task that involves a keyboard.",
+    "The fewer moving parts a system has, the fewer things can go wrong at three in the morning.",
+    "Technical debt is not inherently bad. The problem is when it accumulates without acknowledgement or a plan.",
+    "A good API is one you can use without reading the documentation twice.",
+    "Security is not a feature to be added later. It is a property of the architecture from the first commit.",
+    "Observability is the difference between knowing a system is broken and knowing why it is broken.",
+    "The right tool for a job is the one the team understands deeply, not the one with the most features.",
+    "Performance optimisation without measurement is just guessing with extra steps.",
+    "Write code that the person debugging it at midnight will thank you for.",
+    "A test that never fails is not a safety net. It is a false sense of confidence.",
+    "Simplicity is harder to achieve than complexity. It requires knowing what to leave out.",
+    "State is the source of most bugs. The less mutable state a system carries, the easier it is to reason about.",
+    "Good defaults, clear errors, and short feedback loops are the three properties that make tools enjoyable to use.",
 ]
+
+# ═════════════════════════════════════════════════════════════════
+#  Quotes — genuine, professional, technically adjacent
+# ═════════════════════════════════════════════════════════════════
 
 QUOTES = [
-    "whether you think you can or you think you cannot you are right henry ford",
-    "the only way to do great work is to love what you do steve jobs",
-    "in the middle of difficulty lies opportunity albert einstein",
-    "it does not matter how slowly you go as long as you do not stop confucius",
-    "success is not final failure is not fatal it is the courage to continue that counts winston churchill",
-    "the future belongs to those who believe in the beauty of their dreams eleanor roosevelt",
-    "it always seems impossible until it is done nelson mandela",
-    "strive not to be a success but rather to be of value albert einstein",
-    "the best revenge is massive success frank sinatra",
-    "life is what happens to you while you are busy making other plans john lennon",
-    "you miss one hundred percent of the shots you never take wayne gretzky",
-    "whether you think you can or you think you cannot you are right henry ford",
-    "the only limit to our realization of tomorrow will be our doubts of today franklin d roosevelt",
-    "do not go where the path may lead go instead where there is no path and leave a trail emerson",
-    "two roads diverged in a wood and i took the one less traveled by and that has made all the difference robert frost",
+    "The art of programming is the art of organising complexity. — Edsger Dijkstra",
+    "Simplicity is the ultimate sophistication. — Leonardo da Vinci",
+    "Any fool can write code that a computer can understand. Good programmers write code that humans can understand. — Martin Fowler",
+    "First, solve the problem. Then, write the code. — John Johnson",
+    "Before software can be reusable it first has to be usable. — Ralph Johnson",
+    "The best performance improvement is the transition from the nonworking state to the working state. — John Ousterhout",
+    "Walking on water and developing software from a specification are easy if both are frozen. — Edward V. Berard",
+    "It always takes longer than you expect, even when you take into account Hofstadter's Law. — Douglas Hofstadter",
+    "Measuring programming progress by lines of code is like measuring aircraft building progress by weight. — Bill Gates",
+    "The most dangerous phrase in the language is: we have always done it this way. — Grace Hopper",
+    "Software is a great combination of artistry and engineering. — Bill Gates",
+    "The function of good software is to make the complex appear to be simple. — Grady Booch",
+    "One of my most productive days was throwing away 1000 lines of code. — Ken Thompson",
+    "Programs must be written for people to read, and only incidentally for machines to execute. — Abelson and Sussman",
+    "The computing scientist's main challenge is not to get confused by the complexities of his own making. — Dijkstra",
+    "Debugging is twice as hard as writing the code in the first place. — Brian Kernighan",
+    "Premature optimisation is the root of all evil. — Donald Knuth",
+    "Make it work, make it right, make it fast. In that order. — Kent Beck",
+    "Software entities should be open for extension, but closed for modification. — Bertrand Meyer",
+    "There are only two hard things in computer science: cache invalidation and naming things. — Phil Karlton",
 ]
 
-CODE_SNIPPETS = [
-    "def greet(name): return f'hello {name}'",
-    "for i in range(10): print(i * i)",
-    "result = [x for x in data if x > 0]",
-    "with open('file.txt', 'r') as f: content = f.read()",
-    "def fibonacci(n): return n if n < 2 else fibonacci(n-1) + fibonacci(n-2)",
-    "class Node: def __init__(self, val): self.val = val; self.next = None",
-    "sorted_list = sorted(items, key=lambda x: x.name)",
-    "words = text.strip().lower().split()",
-    "count = sum(1 for char in text if char.isalpha())",
-    "pairs = {k: v for k, v in zip(keys, values)}",
-    "import os; path = os.path.join(base, 'data', 'records.json')",
-    "def clamp(val, lo, hi): return max(lo, min(hi, val))",
-    "avg = sum(values) / len(values) if values else 0",
-    "unique = list(dict.fromkeys(items))",
-    "matrix = [[0] * cols for _ in range(rows)]",
-    "def retry(fn, attempts=3): return next(fn() for _ in range(attempts))",
-    "headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}",
-    "chunks = [data[i:i+n] for i in range(0, len(data), n)]",
+# ═════════════════════════════════════════════════════════════════
+#  Code — real, readable Python snippets
+# ═════════════════════════════════════════════════════════════════
+
+CODE_SAMPLES = [
+    """def retry(fn, attempts=3, delay=1.0):
+    for i in range(attempts):
+        try:
+            return fn()
+        except Exception as e:
+            if i == attempts - 1:
+                raise
+            time.sleep(delay * (i + 1))""",
+
+    """def paginate(query, page_size=100):
+    offset = 0
+    while True:
+        batch = query.offset(offset).limit(page_size).all()
+        if not batch:
+            break
+        yield from batch
+        offset += page_size""",
+
+    """class RateLimiter:
+    def __init__(self, max_calls, period):
+        self.max_calls = max_calls
+        self.period = period
+        self._calls = []
+
+    def is_allowed(self):
+        now = time.time()
+        self._calls = [t for t in self._calls if now - t < self.period]
+        if len(self._calls) < self.max_calls:
+            self._calls.append(now)
+            return True
+        return False""",
+
+    """def flatten(nested, depth=None):
+    for item in nested:
+        if isinstance(item, list) and depth != 0:
+            yield from flatten(item, None if depth is None else depth - 1)
+        else:
+            yield item""",
+
+    """def chunk(iterable, size):
+    it = iter(iterable)
+    while True:
+        batch = list(islice(it, size))
+        if not batch:
+            return
+        yield batch""",
+
+    """@contextmanager
+def timer(label="elapsed"):
+    start = time.perf_counter()
+    try:
+        yield
+    finally:
+        elapsed = time.perf_counter() - start
+        print(f"{label}: {elapsed:.3f}s")""",
+
+    """def deep_merge(base, override):
+    result = base.copy()
+    for key, value in override.items():
+        if key in result and isinstance(result[key], dict):
+            result[key] = deep_merge(result[key], value)
+        else:
+            result[key] = value
+    return result""",
+
+    """def safe_get(mapping, *keys, default=None):
+    current = mapping
+    for key in keys:
+        if not isinstance(current, dict):
+            return default
+        current = current.get(key, default)
+    return current""",
 ]
 
-NUMBERS = [
-    "1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0",
-    "3 14159 26535 89793 23846 26433 83279 50288",
-    "2 71828 18284 59045 23536 02874 71352 66249",
-    "100 200 300 400 500 600 700 800 900 1000",
+# ═════════════════════════════════════════════════════════════════
+#  Numbers — realistic numeric sequences
+# ═════════════════════════════════════════════════════════════════
+
+NUMBER_PHRASES = [
+    "192.168.1.1 255.255.255.0 10.0.0.0 172.16.0.1 127.0.0.1",
+    "2024-01-15 2023-12-31 2025-06-01 1999-08-24 2010-03-07",
+    "3.14159 2.71828 1.61803 0.69315 1.41421 1.73205",
     "1024 2048 4096 8192 16384 32768 65536 131072",
-    "192 168 1 1 255 255 255 0 10 0 0 1 172 16 0 1",
-    "42 17 99 3 58 71 24 86 13 67 45 92 36 81 29",
-    "2024 2025 2026 1999 2000 1984 1776 1066 1492",
+    "100 200 400 800 1600 3200 6400 12800 25600",
+    "8080 443 80 22 3306 5432 6379 27017 9200",
+    "0x1A 0xFF 0x4C 0x2B 0x8E 0xAD 0x7F 0x00 0xC3",
+    "273.15 -40.0 100.0 37.0 -196.0 2730.0 5778.0",
+    "1e3 2.5e-4 9.81e0 6.674e-11 1.380e-23 6.022e23",
+    "1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987",
 ]
 
+# ═════════════════════════════════════════════════════════════════
+#  Public interface
+# ═════════════════════════════════════════════════════════════════
 
-# ── Category definitions ───────────────────────────────────────────────────────
-
-CATEGORIES: dict[str, dict] = {
-    "words": {
-        "label": "Common Words",
-        "description": "Top 200 words — great for finger placement",
-        "emoji": "📝",
-    },
-    "sentences": {
-        "label": "Sentences",
-        "description": "Natural prose with varied rhythm",
-        "emoji": "📖",
-    },
-    "quotes": {
-        "label": "Quotes",
-        "description": "Famous quotes — motivating and varied",
-        "emoji": "💬",
-    },
-    "code": {
-        "label": "Code",
-        "description": "Python snippets — symbols and syntax",
-        "emoji": "🖥",
-    },
-    "numbers": {
-        "label": "Numbers",
-        "description": "Numeric sequences — for data entry focus",
-        "emoji": "🔢",
-    },
-}
-
-
-# ── Public API ─────────────────────────────────────────────────────────────────
-
-def get_text(category: str, word_target: int = 40) -> str:
-    """Return a ready-to-type string for the given category.
-
-    Args:
-        category: One of the CATEGORIES keys.
-        word_target: Approximate number of words to aim for.
-
-    Returns:
-        A clean, single-line string to type.
+def get_builtin_text(mode: str, target_words: int = 50) -> str:
     """
-    if category == "words":
-        pool = COMMON_WORDS.copy()
-        random.shuffle(pool)
-        words: list[str] = []
-        while len(words) < word_target:
-            words.extend(pool)
-        return " ".join(words[:word_target])
+    Return a text string for the given mode and approximate word count.
+    """
+    mode = mode.lower().strip()
 
-    elif category == "sentences":
-        pool = SENTENCES.copy()
-        random.shuffle(pool)
-        result = ""
-        for s in pool:
-            if len(result.split()) >= word_target:
-                break
-            result = (result + " " + s).strip()
-        return result
-
-    elif category == "quotes":
-        pool = QUOTES.copy()
-        random.shuffle(pool)
-        result = ""
-        for q in pool:
-            if len(result.split()) >= word_target:
-                break
-            result = (result + " " + q).strip()
-        return result
-
-    elif category == "code":
-        pool = CODE_SNIPPETS.copy()
-        random.shuffle(pool)
-        result = ""
-        for snippet in pool:
-            if len(result.split()) >= word_target:
-                break
-            result = (result + "  " + snippet).strip()
-        return result
-
-    elif category == "numbers":
-        pool = NUMBERS.copy()
-        random.shuffle(pool)
-        result = ""
-        for n in pool:
-            if len(result.split()) >= word_target:
-                break
-            result = (result + " " + n).strip()
-        return result
-
-    # Fallback
-    return get_text("sentences", word_target)
-
-from key4ce.content.base import TextContent, ContentProvider
+    if mode == "words":
+        return _words_text(target_words)
+    elif mode == "sentences":
+        return _sentences_text(target_words)
+    elif mode == "quotes":
+        return _quotes_text(target_words)
+    elif mode == "code":
+        return _code_text()
+    elif mode == "numbers":
+        return _numbers_text(target_words)
+    else:
+        return _words_text(target_words)
 
 
-BUILTIN_TEXTS: list[TextContent] = [
-    TextContent(
-        id="easy_common_1",
-        title="Easy Common 1",
-        text="the quick brown fox jumps over the lazy dog",
-        source_type="builtin",
-        difficulty="easy",
-        tags=["common", "pangram"],
-    ),
-    TextContent(
-        id="easy_common_2",
-        title="Easy Common 2",
-        text="practice makes perfect and patience pays off",
-        source_type="builtin",
-        difficulty="easy",
-        tags=["common"],
-    ),
-    TextContent(
-        id="medium_sentence_1",
-        title="Medium Sentence 1",
-        text="small consistent improvements lead to remarkable results over time",
-        source_type="builtin",
-        difficulty="medium",
-        tags=["sentence"],
-    ),
-    TextContent(
-        id="hard_code_1",
-        title="Hard Code 1",
-        text="def fibonacci(n): return n if n < 2 else fibonacci(n-1) + fibonacci(n-2)",
-        source_type="builtin",
-        difficulty="hard",
-        tags=["code"],
-    ),
-]
+def _words_text(target: int) -> str:
+    words = random.sample(WORDS, min(target, len(WORDS)))
+    if len(words) < target:
+        words += random.choices(WORDS, k=target - len(words))
+    return " ".join(words[:target])
 
 
-class BuiltinContent(ContentProvider):
-    @property
-    def name(self) -> str:
-        return "Built-in Samples"
+def _sentences_text(target_words: int) -> str:
+    pool    = random.sample(SENTENCES, len(SENTENCES))
+    result  = []
+    count   = 0
+    for s in pool:
+        result.append(s)
+        count += len(s.split())
+        if count >= target_words:
+            break
+    return " ".join(result)
 
-    @property
-    def source_type(self) -> str:
-        return "builtin"
 
-    async def get_random(self) -> TextContent:
-        return random.choice(BUILTIN_TEXTS)
+def _quotes_text(target_words: int) -> str:
+    pool   = random.sample(QUOTES, len(QUOTES))
+    result = []
+    count  = 0
+    for q in pool:
+        result.append(q)
+        count += len(q.split())
+        if count >= target_words:
+            break
+    return " ".join(result)
 
-    async def get_by_id(self, content_id: str) -> TextContent | None:
-        for item in BUILTIN_TEXTS:
-            if item.id == content_id:
-                return item
-        return None
 
-    async def list_available(self, limit: int = 20) -> list[TextContent]:
-        return BUILTIN_TEXTS[:limit]
+def _code_text() -> str:
+    return random.choice(CODE_SAMPLES).strip()
 
-    async def list_by_difficulty(self, difficulty: str, limit: int = 20) -> list[TextContent]:
-        items = [i for i in BUILTIN_TEXTS if i.difficulty == difficulty]
-        return items[:limit]
 
-    async def get_random_by_difficulty(self, difficulty: str) -> TextContent:
-        items = await self.list_by_difficulty(difficulty)
-        if not items:
-            return await self.get_random()
-        return random.choice(items)
-
-    async def search(self, query: str, limit: int = 10) -> list[TextContent]:
-        q = query.lower().strip()
-        if not q:
-            return []
-        matched = [
-            item
-            for item in BUILTIN_TEXTS
-            if q in item.title.lower() or q in item.text.lower() or any(q in t for t in item.tags or [])
-        ]
-        return matched[:limit]
+def _numbers_text(target_words: int) -> str:
+    pool   = random.sample(NUMBER_PHRASES, len(NUMBER_PHRASES))
+    result = []
+    count  = 0
+    for phrase in pool:
+        result.append(phrase)
+        count += len(phrase.split())
+        if count >= target_words:
+            break
+    return " ".join(result)
