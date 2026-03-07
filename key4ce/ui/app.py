@@ -30,6 +30,7 @@ class _Kind(Enum):
     QUIT = auto()
     CHANGE_THEME = auto()
     FOCUS_FROM_RESULTS = auto()
+    OPEN_ANALYTICS = auto()
 
 
 @dataclass
@@ -68,6 +69,10 @@ class ScreenAction:
     @staticmethod
     def focus_from_results(analysis: SessionAnalysis) -> "ScreenAction":
         return ScreenAction(_Kind.FOCUS_FROM_RESULTS, {"analysis": analysis})
+
+    @staticmethod
+    def open_analytics() -> "ScreenAction":
+        return ScreenAction(_Kind.OPEN_ANALYTICS)
 
 
 # ── App ────────────────────────────────────────────────────────────────────────
@@ -213,6 +218,9 @@ class App:
                 self._stack.pop()
             self._push_typing(text, "focus")
 
+        elif k == _Kind.OPEN_ANALYTICS:
+            self._push_analytics()
+
     # ── Screen constructors ───────────────────────────────────────────────────
 
     def _push_menu(self) -> None:
@@ -236,7 +244,8 @@ class App:
                 parts.append("keys: " + ", ".join(f"'{c}'" for c in focus_data.problem_chars[:2]))
             focus_hint = "  ·  ".join(parts)
 
-        self._stack.append(MenuScreen(self.theme, stats_line, focus_hint))
+        first_run = stats.total_sessions == 0
+        self._stack.append(MenuScreen(self.theme, stats_line, focus_hint, first_run=first_run))
 
     def _push_typing(self, text: str, source: str, zen: bool = False) -> None:
         from key4ce.ui.screens.typing import TypingScreen
@@ -244,6 +253,13 @@ class App:
         self._stack.append(
             TypingScreen(text, source, self.theme, zen_mode=zen or self._zen, ghost_timings=ghost)
         )
+
+    def _push_analytics(self) -> None:
+        from key4ce.ui.screens.analytics import AnalyticsScreen
+
+        stats = self.db.get_stats()
+        sessions = self.db.list_sessions(limit=25)
+        self._stack.append(AnalyticsScreen(theme=self.theme, stats=stats, sessions=sessions))
 
     def _finish_session(self, engine: TypingEngine, source: str) -> None:
         from key4ce.ui.screens.results import ResultsScreen

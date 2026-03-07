@@ -87,11 +87,11 @@ class TestTypingEngine:
     def test_incorrect_keystroke(self):
         """Test processing incorrect keystrokes."""
         engine = TypingEngine("abc")
-        
+
         result = engine.process_key("x")
-        
+
         assert result == KeystrokeResult.INCORRECT
-        assert engine.state.position == 0  # Position doesn't advance on error
+        assert engine.state.position == 1  # Flow continues even on incorrect key
         assert engine.state.errors == 1
         assert engine.state.combo == 0
     

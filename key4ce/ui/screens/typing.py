@@ -1,4 +1,4 @@
-"""Typing screen — Phase 2 (zen mode, ghost racer, live heatmap toggle)."""
+"""Typing screen with inline prompt typing and focused terminal layout."""
 from __future__ import annotations
 
 import time
@@ -13,7 +13,6 @@ from rich.text import Text
 from key4ce.core.engine import TypingEngine, SessionState
 from key4ce.themes.themes import Theme
 from key4ce.ui.components.progress import render_stats_bar
-from key4ce.ui.components.heatmap import render_heatmap, counts_from_timeline
 
 if TYPE_CHECKING:
     from key4ce.ui.app import ScreenAction
@@ -28,7 +27,7 @@ class TypingScreen:
     Phase 2 additions:
     - zen_mode: hides stats bar; stats shown only at end
     - ghost_timings: cumulative ms list from best previous session
-    - 'h' key toggles live keyboard heatmap
+    - tab key restarts session immediately
     """
 
     def __init__(
@@ -43,7 +42,6 @@ class TypingScreen:
         self.engine = TypingEngine(target_text=text, source=source)
         self._source = source
         self._zen = zen_mode
-        self._show_heatmap = False
 
         # Ghost racer: cumulative ms offsets per correct char
         self._ghost: list[int] = []
@@ -70,7 +68,7 @@ class TypingScreen:
         """Return how many chars the ghost has typed at current elapsed time."""
         if not self._ghost:
             return -1
-        if self.engine.state == SessionState.IDLE:
+        if self.engine.session_state == SessionState.IDLE:
             return 0
         elapsed_ms = self.engine.elapsed * 1000
         pos = 0
@@ -112,8 +110,18 @@ class TypingScreen:
         parts.append(header)
         parts.append(Text(""))
 
-        # Typing text
-        parts.append(self._render_text_block())
+        # Typing text (center panel)
+        parts.append(
+            Align.center(
+                Panel(
+                    self._render_text_block(),
+                    title="Typing",
+                    border_style=t.primary,
+                    padding=(1, 2),
+                    width=min(_LINE_WIDTH + 10, 84),
+                )
+            )
+        )
         parts.append(Text(""))
 
         # Stats bar (hidden in zen mode while typing)
@@ -127,26 +135,19 @@ class TypingScreen:
         else:
             parts.append(Text("  — zen mode —", style=t.text_muted))
 
-        # Live heatmap (toggleable with 'h')
-        if self._show_heatmap:
-            parts.append(Text(""))
-            key_counts = counts_from_timeline(eng.timeline.keystrokes)
-            for line in render_heatmap(key_counts, t, show_keys=True):
-                parts.append(line)
-
         # Footer
         parts.append(Text(""))
         hint = Text()
         hint.append("  Esc ", style=t.primary)
-        hint.append("abandon   ", style=t.text_muted)
-        hint.append("h ", style=t.primary)
-        hint.append("heatmap", style=t.text_muted)
+        hint.append("exit session   ", style=t.text_muted)
+        hint.append("tab ", style=t.primary)
+        hint.append("restart", style=t.text_muted)
         if eng.has_error:
-            hint.append("   ✗ wrong key", style=f"bold {t.error}")
+            hint.append("   wrong key detected", style=f"bold {t.error}")
         parts.append(hint)
 
         border = t.error if eng.has_error else (t.secondary if self._zen else t.dim)
-        return Panel(Group(*parts), border_style=border, padding=(1, 2))
+        return Panel(Group(*parts), border_style=border, padding=(1, 2), expand=True)
 
     def _render_text_block(self) -> Text:
         eng = self.engine
@@ -182,9 +183,8 @@ class TypingScreen:
         if key == readchar.key.ESC:
             return ScreenAction.pop()
 
-        if key in ("h", "H"):
-            self._show_heatmap = not self._show_heatmap
-            return None
+        if key == readchar.key.TAB:
+            return ScreenAction.retry()
 
         if key in (readchar.key.BACKSPACE, "\x08"):
             self.engine.handle_backspace()
@@ -229,7 +229,9 @@ def _line_start_pos(lines: list[str], line_idx: int) -> int:
 def _append_char(text: Text, ch: str, state: str, theme: Theme) -> None:
     t = theme
     if state == "typed":
-        text.append(ch, style=t.dim)
+        text.append(ch, style="bold green")
+    elif state == "typed_error":
+        text.append(ch, style=f"bold {t.error}")
     elif state == "cursor":
         display = "█" if ch == " " else ch
         text.append(display, style=f"bold black on {t.primary}")
